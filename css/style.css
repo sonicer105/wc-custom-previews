@@ -1,0 +1,84 @@
+.avali-field-wrapper {
+    padding-bottom: 1em;
+}
+
+.avali-field-wrapper label {
+    display: block;
+}
+
+.color-picker {
+    display: inline-block;
+    position: relative;
+    padding: .6180469716em;
+    background-color: #f2f2f2;
+    color: #43454b;
+    border: 0;
+    -webkit-appearance: none;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.125);
+}
+
+.color-preview {
+    display: block;
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background: #fff;
+}
+
+.color-text {
+    display: inline-block;
+    padding-left: 32px;
+}
+
+@media (min-width: 768px) {
+    .avali-image-preview {
+        width: 41.1764705882%;
+        float: left;
+        margin-right: 5.8823529412%;
+        margin-bottom: 3.706325903em;
+    }
+}
+
+.avali-image-preview {
+    position: relative;
+    opacity: 1;
+    transition: opacity 0.25s ease-in-out 0s;
+}
+
+.woocommerce-product-gallery {
+    position: relative;
+    padding-bottom: 45px;
+}
+
+#switch-to-preview {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+/* Loading Animation */
+
+.loader-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
