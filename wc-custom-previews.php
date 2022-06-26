@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Avali Custom Previews
  * Plugin URI: https://github.com/sonicer105/wc-custom-previews
  * description: Early alpha plugin to generate previews on the fly based on user input on product page.
- * Version: 0.0.1
+ * Version: 0.0.2
  * Author: @LinuxPony#3888 & @Tritty#9922
  * Author URI: https://sailextech.me/
  * Requires at least: 6.0
@@ -15,12 +15,12 @@
  * License: GPLv3
  *
  * @package wc_dynamic_preview
- * @version 0.0.1
+ * @version 0.0.2
 */
 
 defined( 'ABSPATH' ) or die(); // Prevents direct access to file.
 define('WC_CP_SLUG', 'wc_custom_preview');
-define('WC_CP_VER', '0.0.1');
+define('WC_CP_VER', '0.0.2');
 define('WC_CP_PATH', ABSPATH . 'wp-content/plugins/wc-custom-previews/');
 
 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -35,53 +35,74 @@ class WC_Custom_Previews {
     const layer_config = [
         'layers' => [
             [
+                'id' => 'avali-base',
+                'title' => 'Base',
+                'src' => WC_CP_PATH . 'img/a0_base.png',
+                'configurable' => false
+            ],
+            [
+                'id' => 'avali-eye',
+                'title' => 'Eyes',
+                'src' => WC_CP_PATH . 'img/a1_eye.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
+                'configurable' => true
+            ],
+            [
                 'id' => 'avali-primary',
-                'title' => 'Primary Color',
-                'src' => WC_CP_PATH . 'img/0_primary.png',
+                'title' => 'Primary',
+                'src' => WC_CP_PATH . 'img/a2_primary.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
                 'configurable' => true
             ],
             [
                 'id' => 'avali-secondary',
-                'title' => 'Secondary Color',
-                'src' => WC_CP_PATH . 'img/1_secondary.png',
+                'title' => 'Secondary',
+                'src' => WC_CP_PATH . 'img/a3_secondary.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
+                'configurable' => true
+            ],
+            [
+                'id' => 'avali-dots',
+                'title' => 'Dots',
+                'src' => WC_CP_PATH . 'img/a4_dots.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
                 'configurable' => true
             ],
             [
                 'id' => 'avali-markings',
-                'title' => 'Marking Color',
-                'src' => WC_CP_PATH . 'img/2_markings.png',
-                'configurable' => true
-            ],
-            [
-                'id' => 'avali-pads',
-                'title' => 'Pad Color',
-                'src' => WC_CP_PATH . 'img/3_pads.png',
+                'title' => 'Markings',
+                'src' => WC_CP_PATH . 'img/a5_markings.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
                 'configurable' => true
             ],
             [
                 'id' => 'avali-claws',
-                'title' => 'Claw Color',
-                'src' => WC_CP_PATH . 'img/4_claws.png',
+                'title' => 'Claws',
+                'src' => WC_CP_PATH . 'img/a6_claws.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
                 'configurable' => true
             ],
             [
-                'id' => 'avali-beans',
-                'title' => 'Bean Color',
-                'src' => WC_CP_PATH . 'img/5_beans.png',
+                'id' => 'avali-talon-pads',
+                'title' => 'Talon Pads',
+                'src' => WC_CP_PATH . 'img/a7_talon_pads.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
                 'configurable' => true
             ],
             [
-                'id' => 'avali-eyes',
-                'title' => 'Eye Color',
-                'src' => WC_CP_PATH . 'img/6_eye.png',
-                'configurable' => true
-            ],
-            [
-                'id' => 'avali-overlay',
-                'title' => 'Overlay',
-                'src' => WC_CP_PATH . 'img/7_overlay.png',
+                'id' => 'avali-shading',
+                'title' => 'Shading',
+                'src' => WC_CP_PATH . 'img/a8_shading.png',
+                'blend_mode' => Imagick::COMPOSITE_MULTIPLY,
                 'configurable' => false
             ],
+            [
+                'id' => 'avali-store-text',
+                'title' => 'Store Text',
+                'src' => WC_CP_PATH . 'img/a9_store.png',
+                'blend_channel' => Imagick::CHANNEL_ALPHA,
+                'configurable' => false
+            ]
         ],
         'color_choices' => [
             [

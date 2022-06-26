@@ -34,10 +34,12 @@ class WC_CP_API {
          */
 
         foreach (WC_Custom_Previews::layer_config['layers'] as $layer) {
+            $blend_mode = isset($layer['blend_mode']) ? $layer['blend_mode'] : imagick::COMPOSITE_DEFAULT;
+            $blend_channel = isset($layer['blend_channel']) ? $layer['blend_channel'] : imagick::CHANNEL_DEFAULT;
             if($layer['configurable']) {
-                array_push($layer_config, new WP_WC_Image_Layer($layer['src'], $this->GetSanitizedColor($request, $layer['id'])));
+                array_push($layer_config, new WP_WC_Image_Layer($layer['src'], $this->GetSanitizedColor($request, $layer['id']), $blend_mode, $blend_channel));
             } else {
-                array_push($layer_config, new WP_WC_Image_Layer($layer['src']));
+                array_push($layer_config, new WP_WC_Image_Layer($layer['src'], '', $blend_mode, $blend_channel));
             }
         }
 
@@ -58,7 +60,7 @@ class WC_CP_API {
         }
         $image = $layer_config[0]->generate_layer();
         for ($i = 1; $i < count($layer_config); $i++) {
-            $image->compositeImage($layer_config[$i]->generate_layer(), imagick::COMPOSITE_DEFAULT, 0, 0, Imagick::CHANNEL_ALPHA);
+            $image->compositeImage($layer_config[$i]->generate_layer(), $layer_config[$i]->blend_mode(), 0, 0, $layer_config[$i]->blend_channel());
         }
         return $image;
     }
@@ -89,10 +91,16 @@ class WP_WC_Image_Layer {
     public $image_path = '';
     // Hexadecimal color to apply to the layer.
     public $color_code = '';
+    // Blend mode to use.
+    public $blend_mode = imagick::COMPOSITE_DEFAULT;
+    // Blend channel to use
+    public $blend_channel = Imagick::CHANNEL_DEFAULT;
 
-    public function __construct($image_path, $color_code = '') {
+    public function __construct($image_path, $color_code, $blend_mode, $blend_channel) {
         $this->image_path = $image_path;
         $this->color_code = $color_code;
+        $this->blend_mode = $blend_mode;
+        $this->blend_channel = $blend_channel;
     }
 
     public function generate_layer() {
@@ -105,6 +113,16 @@ class WP_WC_Image_Layer {
             $layer->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
         }
         return $layer;
+    }
+
+    public function blend_mode()
+    {
+        return $this->blend_mode;
+    }
+
+    public function blend_channel()
+    {
+        return $this->blend_channel;
     }
 }
 
