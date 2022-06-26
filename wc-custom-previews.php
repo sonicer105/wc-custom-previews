@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Avali Custom Previews
  * Plugin URI: https://github.com/sonicer105/wc-custom-previews
  * description: Early alpha plugin to generate previews on the fly based on user input on product page.
- * Version: 0.0.2
+ * Version: 0.0.3
  * Author: @LinuxPony#3888 & @Tritty#9922
  * Author URI: https://sailextech.me/
  * Requires at least: 6.0
@@ -15,12 +15,12 @@
  * License: GPLv3
  *
  * @package wc_dynamic_preview
- * @version 0.0.2
+ * @version 0.0.3
 */
 
 defined( 'ABSPATH' ) or die(); // Prevents direct access to file.
 define('WC_CP_SLUG', 'wc_custom_preview');
-define('WC_CP_VER', '0.0.2');
+define('WC_CP_VER', '0.0.3');
 define('WC_CP_PATH', ABSPATH . 'wp-content/plugins/wc-custom-previews/');
 
 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -108,36 +108,43 @@ class WC_Custom_Previews {
             [
                 'id' => 'black',
                 'title' => 'Black',
+                'description' => 'Row 1, Column 1',
                 'value' => '#000000'
             ],
             [
                 'id' => 'red',
                 'title' => 'Red',
+                'description' => 'Row 1, Column 2',
                 'value' => '#FF0000'
             ],
             [
                 'id' => 'green',
                 'title' => 'Green',
+                'description' => 'Row 1, Column 3',
                 'value' => '#00FF00'
             ],
             [
                 'id' => 'blue',
                 'title' => 'Blue',
+                'description' => 'Row 1, Column 4',
                 'value' => '#0000FF'
             ],
             [
                 'id' => 'yellow',
                 'title' => 'Yellow',
+                'description' => 'Row 2, Column 1',
                 'value' => '#FFFF00'
             ],
             [
                 'id' => 'cyan',
                 'title' => 'Cyan',
+                'description' => 'Row 2, Column 2',
                 'value' => '#00FFFF'
             ],
             [
                 'id' => 'white',
                 'title' => 'White',
+                'description' => 'Row 2, Column 3',
                 'value' => '#FFFFFF'
             ],
         ]

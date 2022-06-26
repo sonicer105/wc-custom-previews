@@ -15,7 +15,6 @@ class WC_CP_Front_End {
         add_action('init', [$this, 'register_resources']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_resources']);
 
-//        add_action('woocommerce_before_single_product_summary', [$this, 'avali_preview_frame'], 10);
         add_action('woocommerce_before_add_to_cart_button', [$this, 'avali_builder_dropdowns']);
         add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_custom_field'], 10, 3);
         add_filter('woocommerce_post_class', [$this, 'add_single_product_class'], 10, 2);
@@ -29,30 +28,26 @@ class WC_CP_Front_End {
      * Register all the plugin resources in the plugin with WordPress
      */
     function register_resources() {
-        wp_register_script( 'wc_cp_script', plugins_url('/js/script.js', __FILE__), array('jquery'), WC_CP_VER );
-        wp_register_style( 'wc_cp_style', plugins_url('/css/style.css', __FILE__), false, WC_CP_VER, 'all');
+        wp_register_script( 'wc-cp-js', plugins_url('/js/script.js', __FILE__), array('jquery'), WC_CP_VER );
+        wp_register_style( 'wc-cp-css', plugins_url('/css/style.css', __FILE__), false, WC_CP_VER, 'all');
 
-        wp_register_script( 'color_picker_js_script', plugins_url('/js/colorPick.min.js', __FILE__), array('jquery'), '0.4.1-11-g7bc9984' );
-        wp_register_style( 'color_picker_js_style', plugins_url('/css/colorPick.min.css', __FILE__), false, '0.4.1-11-g7bc9984', 'all');
+        wp_register_script( 'select2-js', plugins_url('/js/select2.min.js', __FILE__), array('jquery'), '4.0.13' );
+        wp_register_style( 'select2-css', plugins_url('/css/select2.min.css', __FILE__), false, '4.0.13', 'all');
     }
 
     /**
      * Add all the plugin resources to the front end rendering queue
      */
     function enqueue_resources(){
-        wp_enqueue_script('wc_cp_script');
-        wp_enqueue_style('wc_cp_style');
+        wp_enqueue_script('wc-cp-js');
+        wp_enqueue_style('wc-cp-css');
 
         // Adds the color pallet as a varable to the JS file.
-        wp_localize_script('wc_cp_script', 'colorPickerPallet', WC_Custom_Previews::layer_config['color_choices']);
+        wp_localize_script('wc-cp-js', 'colorPickerPallet', WC_Custom_Previews::layer_config['color_choices']);
 
-        wp_enqueue_script('color_picker_js_script');
-        wp_enqueue_style( 'color_picker_js_style' );
+        wp_enqueue_script('select2-js');
+        wp_enqueue_style( 'select2-css' );
     }
-
-//    function avali_preview_frame() {
-//        echo '<div style="float: left">test</div><div style="clear: left"></div>';
-//    }
 
     function avali_builder_dropdowns() {
         global $post;
@@ -68,9 +63,8 @@ class WC_CP_Front_End {
             $title = $item['title'];
             echo <<<EOF
 <div class="avali-field-wrapper">
-    <label for="layer-1">$title</label>
-    <input type="hidden" id="$id" name="$id" value="#FFFFFF">
-    <div class="color-picker" data-for="#$id" role="button"><span class="color-preview"></span><span class="color-text">#000000</span></div>
+    <label for="$id">$title</label>
+    <select id="$id" name="$id" class="color-picker"></select>
 </div>
 EOF;
         }

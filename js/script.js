@@ -4,54 +4,69 @@
  * @property {string} id Identifier
  * @property {string} title Nice name for displaying
  * @property {string} value The hex color code including pound symbol
+ * @property {string} description Additional information about the choice for display
  */
 
 // Wait for page load
 (function ($){
-
-    let still_init = true;
 
     /**
      * Initialize Color Picker on single product page
      */
     function initColorPicker() {
         // Detect if color picker was loaded yet
-        if($().colorPick){
-            // Init the Color Picker
-            $(".color-picker").colorPick({
-                'initialColor': '#ffffff',
-                'onColorSelected': onColorSelected,
-                'allowRecent': true,
-                'recentMax': 5,
-                'palette': colorPickerPallet.map(x => x.value),
-                'paletteLabel': 'Available Fabrics',
-                'allowCustomColor': false,
-            })
+        if($().select2){
+            $(".color-picker").select2({
+                width: '100%',
+                data: select2GetChoices(),
+                templateResult: select2FormatStateDropdown,
+                templateSelection: select2FormatStateSelected
+            }).val('#FFFFFF').trigger('change').on("select2:select", show_preview);
             init_preview_pane();
-            still_init = false;
-            console.log('Color Picker ready!');
+            console.log('Color Picker (Select2) ready!');
         } else {
             // Back off for 250ms if it was not detected and try again
             setTimeout(initColorPicker, 250);
         }
     }
 
-    /**
-     * Color Picker color selected callback
-     */
-    function onColorSelected() {
-        // set the target's value in the `data-for` field
-        $($(this.element).data('for')).val(this.color);
-
-        // set the little color block's color
-        $(this.element).find('.color-preview').css({'backgroundColor': this.color});
-
-        // set the preview text to the color's hex code
-        $(this.element).find('.color-text').text(this.color);
-
-        if (!still_init) {
-            show_preview();
+    function select2GetChoices() {
+        let toReturn = [];
+        for (let i in colorPickerPallet) {
+            if (colorPickerPallet.hasOwnProperty(i)) {
+                toReturn[i] = {
+                    id: colorPickerPallet[i].value,
+                    text: colorPickerPallet[i].title + ' (' + colorPickerPallet[i].value + ')',
+                    description: colorPickerPallet[i].description
+                }
+            }
         }
+        return toReturn;
+    }
+
+    function select2FormatStateSelected(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        return $(
+            '<span>' +
+            '<span class="color-preview color-selected" style="background-color: ' + state.id + ';"></span>' +
+            '<span class="color-text">' + state.text + '</span>' +
+            '</span>'
+        );
+    }
+
+    function select2FormatStateDropdown(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        return $(
+            '<span>' +
+            '<span class="color-preview color-dropdown" style="background-color: ' + state.id + ';"></span>' +
+            '<span class="color-text">' + state.text + '<br />' +
+            '<span class="color-description">' + state.description + '</span>' +
+            '</span></span>'
+        );
     }
 
     function init_preview_pane() {

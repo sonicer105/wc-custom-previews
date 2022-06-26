@@ -34,8 +34,8 @@ class WC_CP_API {
          */
 
         foreach (WC_Custom_Previews::layer_config['layers'] as $layer) {
-            $blend_mode = isset($layer['blend_mode']) ? $layer['blend_mode'] : imagick::COMPOSITE_DEFAULT;
-            $blend_channel = isset($layer['blend_channel']) ? $layer['blend_channel'] : imagick::CHANNEL_DEFAULT;
+            $blend_mode = isset($layer['blend_mode']) ? $layer['blend_mode'] : Imagick::COMPOSITE_DEFAULT;
+            $blend_channel = isset($layer['blend_channel']) ? $layer['blend_channel'] : Imagick::CHANNEL_DEFAULT;
             if($layer['configurable']) {
                 array_push($layer_config, new WP_WC_Image_Layer($layer['src'], $this->GetSanitizedColor($request, $layer['id']), $blend_mode, $blend_channel));
             } else {
@@ -92,7 +92,7 @@ class WP_WC_Image_Layer {
     // Hexadecimal color to apply to the layer.
     public $color_code = '';
     // Blend mode to use.
-    public $blend_mode = imagick::COMPOSITE_DEFAULT;
+    public $blend_mode = Imagick::COMPOSITE_DEFAULT;
     // Blend channel to use
     public $blend_channel = Imagick::CHANNEL_DEFAULT;
 
