@@ -1,0 +1,21 @@
+.form-table .grid-editor-wrapper th,
+.form-table .grid-editor-wrapper td,
+.form-table .layer-editor-wrapper th,
+.form-table .layer-editor-wrapper td {
+    padding: 0
+}
+.wp-core-ui .button-danger {
+    background: #ff0000;
+    border-color: #ff0000;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: none;
+}
+.wp-core-ui .button-danger.focus,
+.wp-core-ui .button-danger.hover,
+.wp-core-ui .button-danger:focus,
+.wp-core-ui .button-danger:hover {
+    background: #cc0000;
+    border-color: #cc0000;
+    color: #fff;
+}

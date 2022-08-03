@@ -27,25 +27,38 @@ class WC_CP_API {
         $layer_config = [];
 
         /*
-        'id' => 'primary',
-        'title' => 'Primary',
-        'src' => WC_CP_PATH . 'img/0_primary.png',
-        'configurable' => true
+            [id] => base
+            [title] => Base
+            [srcConfigurable] =>
+            [src] => 32
+            [colorConfigurable] =>
+            [color] =>
+            [blendChannel] => 134217719
+            [blendMode] => 40
          */
 
-        foreach (WC_Custom_Previews::layer_config['layers'] as $layer) {
-            $blend_mode = isset($layer['blend_mode']) ? $layer['blend_mode'] : Imagick::COMPOSITE_DEFAULT;
-            $blend_channel = isset($layer['blend_channel']) ? $layer['blend_channel'] : Imagick::CHANNEL_DEFAULT;
-            if($layer['configurable']) {
-                array_push($layer_config, new WP_WC_Image_Layer($layer['src'], $this->GetSanitizedColor($request, $layer['id']), $blend_mode, $blend_channel));
+        if(!isset($request['id']) || empty($request['id'])){
+            return new WP_Error('no-post-id', 'Post ID is required', array('status' => 400));
+        }
+
+        $config = WC_CP_Admin_UI::get_config_for_product($request['id']);
+
+        if ($config instanceof WP_Error) return $config;
+
+        foreach ($config['layers'] as $layer) {
+            $blend_mode = isset($layer['blendMode']) ? $layer['blendMode'] : Imagick::COMPOSITE_DEFAULT;
+            $blend_channel = isset($layer['blendChannel']) ? $layer['blendChannel'] : Imagick::CHANNEL_DEFAULT;
+            if($layer['colorConfigurable']) {
+                array_push($layer_config, new WP_WC_Image_Layer(wp_get_original_image_path($layer['src']), $this->GetSanitizedColor($request, $layer['id']), $blend_mode, $blend_channel));
             } else {
-                array_push($layer_config, new WP_WC_Image_Layer($layer['src'], '', $blend_mode, $blend_channel));
+                array_push($layer_config, new WP_WC_Image_Layer(wp_get_original_image_path($layer['src']), '', $blend_mode, $blend_channel));
             }
         }
 
         $image = $this->CompositeImage($layer_config);
         header('Content-Type: image/' . $image->getImageFormat());
         echo $image;
+        die();
     }
 
     /**

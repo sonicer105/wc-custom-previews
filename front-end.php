@@ -15,7 +15,7 @@ class WC_CP_Front_End {
         add_action('init', [$this, 'register_resources']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_resources']);
 
-        add_action('woocommerce_before_add_to_cart_button', [$this, 'avali_builder_dropdowns']);
+        add_action('woocommerce_before_add_to_cart_button', [$this, 'custom_previews_builder_dropdowns']);
         add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_custom_field'], 10, 3);
         add_filter('woocommerce_post_class', [$this, 'add_single_product_class'], 10, 2);
         add_action('woocommerce_before_single_product_summary', [$this, 'custom_product_add_thumbnails'], 100, 0);
@@ -39,32 +39,40 @@ class WC_CP_Front_End {
      * Add all the plugin resources to the front end rendering queue
      */
     function enqueue_resources(){
-        wp_enqueue_script('wc-cp-js');
-        wp_enqueue_style('wc-cp-css');
+        if (is_singular('product')) {
+            wp_enqueue_script('wc-cp-js');
+            wp_enqueue_style('wc-cp-css');
 
-        // Adds the color pallet as a varable to the JS file.
-        wp_localize_script('wc-cp-js', 'colorPickerPallet', WC_Custom_Previews::layer_config['color_choices']);
+            $data = WC_CP_Admin_UI::get_config_for_product(get_the_ID())['grids'];
+            $data['id'] = get_the_ID();
 
-        wp_enqueue_script('select2-js');
-        wp_enqueue_style( 'select2-css' );
+            // Adds the color pallet as a varable to the JS file.
+            wp_localize_script('wc-cp-js', 'colorPickerPallet', $data);
+
+            wp_enqueue_script('select2-js');
+            wp_enqueue_style( 'select2-css' );
+        }
     }
 
-    function avali_builder_dropdowns() {
+    function custom_previews_builder_dropdowns() {
         global $post;
         // Check for the custom field value
         $product = wc_get_product( $post->ID );
-        $enabled = $product->get_meta('avali_designer', true) == "yes";
-        if(!$enabled) return;
+        $enabled = $product->get_meta('custom_previews', true);
+        if(!isset($enabled) || $enabled == 'none') return;
+
+        $layers = WC_CP_Admin_UI::get_config_for_product($post->ID);
 
         // Only display our field if we've got a value for the field title
-        foreach (WC_Custom_Previews::layer_config['layers'] as $item) {
-            if ($item['configurable'] == false) continue; //Skip layers that should not be colored
+        foreach ($layers['layers'] as $item) {
+            if (!$item['colorConfigurable']) continue; //Skip layers that should not be colored
             $id = $item['id'];
             $title = $item['title'];
+            $color = $item['color'];
             echo <<<EOF
-<div class="avali-field-wrapper">
+<div class="custom-previews-field-wrapper">
     <label for="$id">$title</label>
-    <select id="$id" name="$id" class="color-picker"></select>
+    <select id="$id" name="$id" class="color-picker" data-grid="$color"></select>
 </div>
 EOF;
         }
@@ -79,19 +87,21 @@ EOF;
      * @return array|false
      */
     function validate_custom_field($passed, $product_id, $quantity) {
-        $enabled = wc_get_product($product_id)->get_meta('avali_designer', true) == "yes";
-        if(!$enabled) return $passed;
+        $enabled = wc_get_product($product_id)->get_meta('custom_previews', true);
+        if(!isset($enabled) || $enabled == 'none') return $passed;
 
-        $options = array_column(WC_Custom_Previews::layer_config['color_choices'], 'value');
-        foreach (WC_Custom_Previews::layer_config['layers'] as $item) {
+        $layers = WC_CP_Admin_UI::get_config_for_product($product_id);
 
-            if(!$item['configurable']) continue;
+        foreach ($layers['layers'] as $item) {
+
+            if(!$item['colorConfigurable']) continue;
 
             if(empty($_POST[$item['id']])){
                 wc_add_notice(sprintf(__( 'Please enter a value for %s.', WC_CP_SLUG ), $item['title']), 'error' );
                 return false;
             }
 
+            $options = array_column($layers['grids'][$item['color']], 'value');
             if(!in_array($_POST[$item['id']], $options, true)){
                 wc_add_notice(sprintf(__( 'The field "%s" is invalid.', WC_CP_SLUG ), $item['title']), 'error' );
                 return false;
@@ -109,13 +119,15 @@ EOF;
      * @return array
      */
     function add_custom_field_item_data($cart_item_data, $product_id, $variation_id, $quantity) {
-        $enabled = wc_get_product($product_id)->get_meta('avali_designer', true) == "yes";
-        if(!$enabled) return $cart_item_data;
+        $enabled = wc_get_product($product_id)->get_meta('custom_previews', true);
+        if(!isset($enabled) || $enabled == 'none') return $cart_item_data;
 
-        foreach (WC_Custom_Previews::layer_config['layers'] as $item) {
-            if(!$item['configurable']) continue;
+        $layers = WC_CP_Admin_UI::get_config_for_product($product_id);
 
-            foreach (WC_Custom_Previews::layer_config['color_choices'] as $choice) {
+        foreach ($layers['layers'] as $item) {
+            if(!$item['colorConfigurable']) continue;
+
+            foreach ($layers['grids'][$item['color']] as $choice) {
                 if ($choice['value'] == $_POST[$item['id']]) {
                     $cart_item_data[$item['id']] = $choice['title'];
                     break;
@@ -134,8 +146,9 @@ EOF;
      * @return string
      */
     function cart_item_name($name, $cart_item, $cart_item_key) {
-        foreach (WC_Custom_Previews::layer_config['layers'] as $item) {
-            if(!$item['configurable']) continue;
+        $layers = WC_CP_Admin_UI::get_config_for_product($cart_item['product_id']);
+        foreach ($layers['layers'] as $item) {
+            if(!$item['colorConfigurable']) continue;
             if(isset($cart_item[$item['id']])) {
                 $name .= sprintf('<div><b>%s:</b> %s</div>', esc_html($item['title']), esc_html($cart_item[$item['id']]));
             }
@@ -151,9 +164,10 @@ EOF;
      * @param $order
      */
     function add_custom_data_to_order($item, $cart_item_key, $values, $order) {
+        $layers = WC_CP_Admin_UI::get_config_for_product($item->get_product_id());
         foreach($item as $cart_item_key=>$values) {
-            foreach (WC_Custom_Previews::layer_config['layers'] as $layer_item) {
-                if(!$layer_item['configurable']) continue;
+            foreach ($layers['layers'] as $layer_item) {
+                if(!$layer_item['colorConfigurable']) continue;
                 if(isset($values[$layer_item['id']])) {
                     $item->add_meta_data($layer_item['title'], $values[$layer_item['id']], true);
                 }
@@ -172,20 +186,20 @@ EOF;
         // NOT single product page, so return
         if (!is_product()) return $classes;
 
-        $enabled = $product->get_meta('avali_designer', true) == "yes";
-        if(!$enabled) return $classes;
+        $enabled = $product->get_meta('custom_previews', true);
+        if(!isset($enabled) || $enabled == 'none') return $classes;
 
         // Add new class
-        $classes[] = 'avali-product';
+        $classes[] = 'custom-previews-product';
 
         return $classes;
     }
 
     function custom_product_add_thumbnails(){
         echo <<<EOF
-<div class='avali-image-preview'>
+<div class='custom-previews-image-preview'>
     <div class="loader-wrapper" style="display: none;"><div class="sr-only">Loading...</div><div class="loader"></div></div>
-    <img src="https://dev.avali.sailextech.me/wp-json/wc-custom-previews/v1/generate?primary=ffffff&secondary=ffffff&markings=ffffff&pads=ffffff&claws=ffffff&beans=ffffff&eyes=ffffff">
+    <img src="" alt="">
     <button id="switch-to-gallery" class="button alt">Show gallery</button>
 </div>
 EOF;

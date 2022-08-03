@@ -1,10 +1,11 @@
 /**
- * @typedef colorPickerPallet
- * @type {Object[]}
- * @property {string} id Identifier
- * @property {string} title Nice name for displaying
- * @property {string} value The hex color code including pound symbol
- * @property {string} description Additional information about the choice for display
+ * TODO: Update Typedef
+ * @/typedef colorPickerPallet
+ * @/type {Object[]}
+ * @/property {string} id Identifier
+ * @/property {string} title Nice name for displaying
+ * @/property {string} value The hex color code including pound symbol
+ * @/property {string} description Additional information about the choice for display
  */
 
 // Wait for page load
@@ -16,12 +17,15 @@
     function initColorPicker() {
         // Detect if color picker was loaded yet
         if($().select2){
-            $(".color-picker").select2({
-                width: '100%',
-                data: select2GetChoices(),
-                templateResult: select2FormatStateDropdown,
-                templateSelection: select2FormatStateSelected
-            }).val('#FFFFFF').trigger('change').on("select2:select", show_preview);
+            $(".color-picker").each(function () {
+                $(this).select2({
+                    width: '100%',
+                    data: select2GetChoices($(this).data('grid')),
+                    templateResult: select2FormatStateDropdown,
+                    templateSelection: select2FormatStateSelected
+                }).val(colorPickerPallet[$(this).data('grid') + '-default']).trigger('change').on("select2:select", show_preview);
+
+            });
             init_preview_pane();
             console.log('Color Picker (Select2) ready!');
         } else {
@@ -30,14 +34,14 @@
         }
     }
 
-    function select2GetChoices() {
+    function select2GetChoices(grid) {
         let toReturn = [];
-        for (let i in colorPickerPallet) {
-            if (colorPickerPallet.hasOwnProperty(i)) {
+        for (let i in colorPickerPallet[grid]) {
+            if (colorPickerPallet[grid].hasOwnProperty(i)) {
                 toReturn[i] = {
-                    id: colorPickerPallet[i].value,
-                    text: colorPickerPallet[i].title + ' (' + colorPickerPallet[i].value + ')',
-                    description: colorPickerPallet[i].description
+                    id: colorPickerPallet[grid][i].value,
+                    text: colorPickerPallet[grid][i].title + ' (' + colorPickerPallet[grid][i].value + ')',
+                    description: colorPickerPallet[grid][i].description
                 }
             }
         }
@@ -74,38 +78,39 @@
         $(".woocommerce-product-gallery").append('<button id="switch-to-preview" class="button alt">Show preview</button>')
         $("#switch-to-preview").on('click', show_preview)
         $("#switch-to-gallery").on('click', hide_preview)
-        $(".avali-image-preview").hide();
-        $(".avali-image-preview img").on('load', function () {
-            $(".avali-image-preview .loader-wrapper").hide();
+        $(".custom-previews-image-preview").hide();
+        $(".custom-previews-image-preview img").on('load', function () {
+            $(".custom-previews-image-preview .loader-wrapper").hide();
         });
     }
 
     function show_preview() {
         $(".woocommerce-product-gallery").hide();
-        $(".avali-image-preview").show();
+        $(".custom-previews-image-preview").show();
         refresh_preview();
     }
 
     function hide_preview() {
         $(".woocommerce-product-gallery").show();
-        $(".avali-image-preview").hide();
+        $(".custom-previews-image-preview").hide();
     }
 
     function refresh_preview() {
         let fields = $('form.cart').serializeArray();
         let url = new URL(window.location.origin + '/wp-json/wc-custom-previews/v1/generate');
+        url.searchParams.append('id', colorPickerPallet['id'])
         for (let i in fields){
             if(fields.hasOwnProperty(i)) {
                 url.searchParams.append(fields[i].name, fields[i].value.substring(1))
             }
         }
-        $(".avali-image-preview img").prop('src', url.href);
-        $(".avali-image-preview .loader-wrapper").show();
+        $(".custom-previews-image-preview img").prop('src', url.href);
+        $(".custom-previews-image-preview .loader-wrapper").show();
     }
 
-    // Do nothing if we are not on the avali product page
+    // Do nothing if we are not on the custom-previews product page
     $(function() {
-        if($('.avali-product').length > 0) {
+        if($('.custom-previews-product').length > 0) {
             initColorPicker();
         }
     });
