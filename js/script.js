@@ -22,7 +22,8 @@
                     width: '100%',
                     data: select2GetChoices($(this).data('grid')),
                     templateResult: select2FormatStateDropdown,
-                    templateSelection: select2FormatStateSelected
+                    templateSelection: select2FormatStateSelected,
+                    matcher: select2MatchCustom
                 }).val(colorPickerPallet[$(this).data('grid') + '-default']).trigger('change').on("select2:select", show_preview);
 
             });
@@ -71,6 +72,17 @@
             '<span class="color-description">' + state.description + '</span>' +
             '</span></span>'
         );
+    }
+
+    function select2MatchCustom(params, data) {
+        if ($.trim(params.term) === '') { // No Search Term
+            return data;
+        }
+        if ((typeof data.text !== 'undefined' && data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) ||
+            (typeof data.description !== 'undefined' && data.description.toLowerCase().indexOf(params.term.toLowerCase()) > -1)) {
+            return data;
+        }
+        return null;
     }
 
     function init_preview_pane() {
