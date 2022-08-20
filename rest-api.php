@@ -16,6 +16,7 @@ class WC_CP_API {
             register_rest_route( 'wc-custom-previews/v1', '/generate', array(
                 'methods' => 'GET',
                 'callback' => [$this, 'GenerateImage'],
+                'permission_callback' => '__return_true'
             ));
         });
     }
@@ -25,17 +26,6 @@ class WC_CP_API {
      */
     function GenerateImage($request) {
         $layer_config = [];
-
-        /*
-            [id] => base
-            [title] => Base
-            [srcConfigurable] =>
-            [src] => 32
-            [colorConfigurable] =>
-            [color] =>
-            [blendChannel] => 134217719
-            [blendMode] => 40
-         */
 
         if(!isset($request['id']) || empty($request['id'])){
             return new WP_Error('no-post-id', 'Post ID is required', array('status' => 400));
@@ -122,7 +112,7 @@ class WP_WC_Image_Layer {
         $layer->setImageVirtualPixelMethod(Imagick::VIRTUALPIXELMETHOD_TRANSPARENT);
         if (!empty($this->color_code)) {
             $layer->setImageAlphaChannel(Imagick::ALPHACHANNEL_DEACTIVATE);
-            $layer->opaquePaintImage('black', $this->color_code, 30000, false);
+            $layer->opaquePaintImage('black', $this->color_code, 60000, false);
             $layer->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
         }
         return $layer;

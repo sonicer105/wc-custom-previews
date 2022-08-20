@@ -120,7 +120,13 @@ class WC_CP_Admin_UI {
             }
 
             wp_enqueue_script(WC_CP_SLUG . '-admin-script', WC_CP_URL . 'js/admin-script.js', ['jquery', 'wp-color-picker'], WC_CP_VER);
-            wp_localize_script( WC_CP_SLUG . '-admin-script', 'WC_CP_GRIDS', $grids);
+            wp_localize_script(WC_CP_SLUG . '-admin-script', 'WC_CP_GRIDS', $grids);
+            wp_localize_script(WC_CP_SLUG . '-admin-script', 'Imagick', [
+                'COMPOSITE_DEFAULT' => Imagick::COMPOSITE_DEFAULT,
+                'COMPOSITE_MULTIPLY' => Imagick::COMPOSITE_MULTIPLY,
+                'CHANNEL_DEFAULT' => Imagick::CHANNEL_DEFAULT,
+                'CHANNEL_ALPHA' => Imagick::CHANNEL_ALPHA
+            ]);
 
             wp_enqueue_style('wp-color-picker');
             wp_register_style(WC_CP_SLUG . '-admin-styles', WC_CP_URL . 'css/admin-style.css', false, WC_CP_VER);
@@ -135,13 +141,6 @@ class WC_CP_Admin_UI {
      */
     function option_group() {
         echo '<div class="option_group">';
-//        woocommerce_wp_checkbox([
-//            'id' => 'custom_previews',
-//            'value' => get_post_meta(get_the_ID(), 'custom_previews', true), // true or false
-//            'label' => __('Custom Previews', WC_CP_SLUG),
-//            'desc_tip' => true,
-//            'description' => __('Enables the use of custom previews for this product', WC_CP_SLUG)
-//        ]);
 
         woocommerce_wp_select([
             'id' => 'custom_previews',

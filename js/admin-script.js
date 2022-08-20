@@ -125,13 +125,6 @@ jQuery(function ($){
 
     /* PREVIEW EDITOR CODE */
 
-    const Imagick = {
-        COMPOSITE_DEFAULT: 40,
-        COMPOSITE_MULTIPLY: 38,
-        CHANNEL_DEFAULT: 134217719,
-        CHANNEL_ALPHA: 8
-    }
-
     let layerData = {}
     let layerContainer = $('#layer-table');
     if(layerContainer.length > 0){
@@ -166,10 +159,12 @@ jQuery(function ($){
                 }
             }
         }
-        let blendChannelOptions = '<option value="' + Imagick.CHANNEL_DEFAULT + '"' + (item.blendChannel === Imagick.CHANNEL_DEFAULT ? ' selected="selected"' : '') + '>CHANNEL_DEFAULT</option>' +
-            '<option value="' + Imagick.CHANNEL_ALPHA + '"' + (item.blendChannel === Imagick.CHANNEL_ALPHA ? ' selected="selected"' : '') + '>CHANNEL_ALPHA</option>'
-        let blendModeOptions = '<option value="' + Imagick.COMPOSITE_DEFAULT + '"' + (item.blendMode === Imagick.COMPOSITE_DEFAULT ? ' selected="selected"' : '') + '>COMPOSITE_DEFAULT</option>' +
-            '<option value="' + Imagick.COMPOSITE_MULTIPLY + '"' + (item.blendMode === Imagick.COMPOSITE_MULTIPLY ? ' selected="selected"' : '') + '>COMPOSITE_MULTIPLY</option>'
+        // noinspection EqualityComparisonWithCoercionJS
+        let blendChannelOptions = '<option value="' + Imagick.CHANNEL_DEFAULT + '"' + (item.blendChannel == Imagick.CHANNEL_DEFAULT ? ' selected="selected"' : '') + '>CHANNEL_DEFAULT</option>' +
+            '<option value="' + Imagick.CHANNEL_ALPHA + '"' + (item.blendChannel == Imagick.CHANNEL_ALPHA ? ' selected="selected"' : '') + '>CHANNEL_ALPHA</option>'
+        // noinspection EqualityComparisonWithCoercionJS
+        let blendModeOptions = '<option value="' + Imagick.COMPOSITE_DEFAULT + '"' + (item.blendMode == Imagick.COMPOSITE_DEFAULT ? ' selected="selected"' : '') + '>COMPOSITE_DEFAULT</option>' +
+            '<option value="' + Imagick.COMPOSITE_MULTIPLY + '"' + (item.blendMode == Imagick.COMPOSITE_MULTIPLY ? ' selected="selected"' : '') + '>COMPOSITE_MULTIPLY</option>'
         layerContainer.find('tbody').first().append('<tr>' +
             '<th>' +
             '<button class="button button-secondary button-move-up">' +
