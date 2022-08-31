@@ -88,21 +88,24 @@ class WC_CP_API {
     }
 
     function CheckUA() {
-        if (strpos(strtolower($_SERVER['HTTP_USER_AGENT']), "discord") !== false) {
-            header('Content-Type: text/html');
+        $user_agents = ['discord', 'slack', 'telegram', 'facebook', 'whatsapp', 'googlebot', 'apis-google', 'snap url preview', 'kik'];
+        foreach($user_agents as $agent) {
+            if (strpos(strtolower($_SERVER['HTTP_USER_AGENT']), $agent) !== false) {
+                header('Content-Type: text/html');
 ?><!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>User Agent Blocked</title>
     <meta content="User Agent Blocked" property="og:title" />
-    <meta content="We don't have the processing power to allow embedding of dynamically generated images. Please don't posts link to them!" property="og:description" />
+    <meta content="We don't have the processing power to allow embedding of dynamically generated images. Please don't post links to them! Please download and re-upload the image instead." property="og:description" />
     <meta content="https://avalistore.com/" property="og:url" />
     <meta content="#ff0000" data-react-helmet="true" name="theme-color" />
 </head>
-<body>We don't have the processing power to allow embedding of dynamically generated images. Please don't posts link to them!</body>
+<body>We don't have the processing power to allow embedding of dynamically generated images. Please don't post links to them! Please download and re-upload the image instead.</body>
 </html><?php
-            die();
+                die();
+            }
         }
     }
 }
