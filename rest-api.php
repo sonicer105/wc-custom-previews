@@ -25,6 +25,8 @@ class WC_CP_API {
      * @param WP_REST_Request $request
      */
     function GenerateImage($request) {
+        $this->CheckUA();
+
         $layer_config = [];
 
         if(!isset($request['id']) || empty($request['id'])){
@@ -84,6 +86,25 @@ class WC_CP_API {
         }
         return $color;
     }
+
+    function CheckUA() {
+        if (strpos(strtolower($_SERVER['HTTP_USER_AGENT']), "discord") !== false) {
+            header('Content-Type: text/html');
+?><!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>User Agent Blocked</title>
+    <meta content="User Agent Blocked" property="og:title" />
+    <meta content="We don't have the processing power to allow embedding of dynamically generated images. Please don't posts link to them!" property="og:description" />
+    <meta content="https://avalistore.com/" property="og:url" />
+    <meta content="#ff0000" data-react-helmet="true" name="theme-color" />
+</head>
+<body>We don't have the processing power to allow embedding of dynamically generated images. Please don't posts link to them!</body>
+</html><?php
+            die();
+        }
+    }
 }
 
 /**
@@ -108,6 +129,7 @@ class WP_WC_Image_Layer {
 
     public function generate_layer() {
         $layer = new Imagick($this->image_path);
+        $layer->transformImageColorspace(Imagick::COLORSPACE_SRGB);
         $layer->setImageBackgroundColor('transparent');
         $layer->setImageVirtualPixelMethod(Imagick::VIRTUALPIXELMETHOD_TRANSPARENT);
         if (!empty($this->color_code)) {
