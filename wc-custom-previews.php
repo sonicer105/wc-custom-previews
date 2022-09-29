@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Advanced Custom Previews
  * Plugin URI: https://github.com/sonicer105/wc-custom-previews
  * description: Early alpha plugin to generate previews on the fly based on user input on product page.
- * Version: 0.1.4
+ * Version: 0.1.5
  * Author: @LinuxPony#3888 & @Tritty#9922
  * Author URI: https://sailextech.me/
  * Requires at least: 6.0
@@ -15,12 +15,12 @@
  * License: GPLv3
  *
  * @package wc_dynamic_preview
- * @version 0.1.4
+ * @version 0.1.5
 */
 
 defined( 'ABSPATH' ) or die(); // Prevents direct access to file.
 define('WC_CP_SLUG', 'wc_custom_preview');
-define('WC_CP_VER', '0.1.4');
+define('WC_CP_VER', '0.1.5');
 define('WC_CP_PATH', plugin_dir_path(__FILE__));
 define('WC_CP_URL', plugin_dir_url(__FILE__));
 define('WC_CP_PLUGIN_NAME', 'WooCommerce Custom Previews');

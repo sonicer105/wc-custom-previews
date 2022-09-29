@@ -40,14 +40,16 @@ class WC_CP_Front_End {
      */
     function enqueue_resources(){
         if (is_singular('product')) {
+            $data = WC_CP_Admin_UI::get_config_for_product(get_the_ID());
+            if($data instanceof WP_Error) return;
+
             wp_enqueue_script('wc-cp-js');
             wp_enqueue_style('wc-cp-css');
 
-            $data = WC_CP_Admin_UI::get_config_for_product(get_the_ID())['grids'];
-            $data['id'] = get_the_ID();
+            $data['grids']['id'] = get_the_ID();
 
             // Adds the color pallet as a varable to the JS file.
-            wp_localize_script('wc-cp-js', 'colorPickerPallet', $data);
+            wp_localize_script('wc-cp-js', 'colorPickerPallet', $data['grids']);
 
             wp_enqueue_script('select2-js');
             wp_enqueue_style( 'select2-css' );
@@ -56,12 +58,14 @@ class WC_CP_Front_End {
 
     function custom_previews_builder_dropdowns() {
         global $post;
+
+        $layers = WC_CP_Admin_UI::get_config_for_product($post->ID);
+        if($layers instanceof WP_Error) return;
+
         // Check for the custom field value
         $product = wc_get_product( $post->ID );
         $enabled = $product->get_meta('custom_previews', true);
         if(!isset($enabled) || $enabled == 'none') return;
-
-        $layers = WC_CP_Admin_UI::get_config_for_product($post->ID);
 
         // Only display our field if we've got a value for the field title
         foreach ($layers['layers'] as $item) {
@@ -87,10 +91,11 @@ EOF;
      * @return array|false
      */
     function validate_custom_field($passed, $product_id, $quantity) {
+        $layers = WC_CP_Admin_UI::get_config_for_product($product_id);
+        if($layers instanceof WP_Error) return $passed;
+
         $enabled = wc_get_product($product_id)->get_meta('custom_previews', true);
         if(!isset($enabled) || $enabled == 'none') return $passed;
-
-        $layers = WC_CP_Admin_UI::get_config_for_product($product_id);
 
         foreach ($layers['layers'] as $item) {
 
@@ -119,10 +124,11 @@ EOF;
      * @return array
      */
     function add_custom_field_item_data($cart_item_data, $product_id, $variation_id, $quantity) {
+        $layers = WC_CP_Admin_UI::get_config_for_product($product_id);
+        if($layers instanceof WP_Error) return $cart_item_data;
+
         $enabled = wc_get_product($product_id)->get_meta('custom_previews', true);
         if(!isset($enabled) || $enabled == 'none') return $cart_item_data;
-
-        $layers = WC_CP_Admin_UI::get_config_for_product($product_id);
 
         foreach ($layers['layers'] as $item) {
             if(!$item['colorConfigurable']) continue;
@@ -147,6 +153,8 @@ EOF;
      */
     function cart_item_name($name, $cart_item, $cart_item_key) {
         $layers = WC_CP_Admin_UI::get_config_for_product($cart_item['product_id']);
+        if($layers instanceof WP_Error) return $name;
+
         foreach ($layers['layers'] as $item) {
             if(!$item['colorConfigurable']) continue;
             if(isset($cart_item[$item['id']])) {
@@ -165,6 +173,8 @@ EOF;
      */
     function add_custom_data_to_order($item, $cart_item_key, $values, $order) {
         $layers = WC_CP_Admin_UI::get_config_for_product($item->get_product_id());
+        if($layers instanceof WP_Error) return;
+
         foreach($item as $cart_item_key=>$values) {
             foreach ($layers['layers'] as $layer_item) {
                 if(!$layer_item['colorConfigurable']) continue;
@@ -196,6 +206,11 @@ EOF;
     }
 
     function custom_product_add_thumbnails(){
+        global $post;
+        $product = wc_get_product( $post->ID );
+        $enabled = $product->get_meta('custom_previews', true);
+        if(!isset($enabled) || $enabled == 'none') return;
+
         echo <<<EOF
 <div class='custom-previews-image-preview'>
     <div class="loader-wrapper" style="display: none;"><div class="sr-only">Loading...</div><div class="loader"></div></div>
