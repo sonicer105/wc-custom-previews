@@ -8,12 +8,14 @@ defined( 'ABSPATH' ) or die(); // Prevents direct access to file.
  */
 class WC_CP_API {
 
+    public static string $namespace = 'wc-custom-previews/v1';
+
     /**
      * WC_CP_API constructor.
      */
     function __construct() {
         add_action('rest_api_init', function () {
-            register_rest_route( 'wc-custom-previews/v1', '/generate', array(
+            register_rest_route(self::$namespace, '/generate', array(
                 'methods' => 'GET',
                 'callback' => [$this, 'GenerateImage'],
                 'permission_callback' => '__return_true'
@@ -48,6 +50,8 @@ class WC_CP_API {
         }
 
         $image = $this->CompositeImage($layer_config);
+        // Brighten image to compensate for dark color sample.
+        $image->brightnessContrastImage(11, 8);
         header('Content-Type: image/' . $image->getImageFormat());
         echo $image;
         die();

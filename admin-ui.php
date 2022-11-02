@@ -18,6 +18,8 @@ class WC_CP_Admin_UI {
         /* Woocommerce Product Page */
         add_action('woocommerce_product_options_general_product_data', [$this, 'option_group']);
         add_action('woocommerce_process_product_meta', [$this, 'save_fields'], 10, 2 );
+        /* Woocommerce Order Edit Page */
+        add_action('woocommerce_after_order_itemmeta', [$this, 'insert_image_after_order_item_meta'], 20, 3 );
     }
 
     /* settings pages */
@@ -208,6 +210,43 @@ class WC_CP_Admin_UI {
         }
 
         return $to_return;
+    }
+
+    /**
+     * @param $item_id int
+     * @param $item WC_Order_Item_Product
+     * @param $product WC_Product
+     */
+    function insert_image_after_order_item_meta($item_id, $item, $product) {
+        // Only for "line item" order items
+        if(!$item->is_type('line_item') || !is_admin()) return;
+
+        // Only for backend and for preview products
+        $data = $this->get_config_for_product($product->get_id());
+        if($data instanceof WP_Error) return;
+
+        //echo '<pre>' . print_r($item, true) . '</pre>';
+        //echo '<pre>' . print_r($data, true) . '</pre>';
+
+        $url_params = [
+            'id' => $product->get_id()
+        ];
+
+        foreach ($data['layers'] as $layer) {
+            if($layer['colorConfigurable'] == false) continue;
+            $nice_value = $item->get_meta($layer['title']);
+
+            if(strlen($nice_value) <= 0) { echo "Unable to find meta key \"{$layer['title']}\""; return; }
+
+            $real_value_index = array_search($nice_value, array_column($data['grids'][$layer['color']],'title'));
+
+            if($real_value_index !== 0 && empty($real_value_index)) { echo "Unable to find the hex code for layer \"{$layer['title']}\", value \"{$nice_value}\""; return; }
+
+            $url_params[$layer['id']] = substr($data['grids'][$layer['color']][$real_value_index]['value'], 1);
+        }
+
+        echo '<strong style="display: block;">Generated Image:</strong>';
+        echo '<img src="' . get_rest_url() . WC_CP_API::$namespace . '/generate?' . http_build_query($url_params) . '" style="width:300px;height:300px;">';
     }
 }
 
