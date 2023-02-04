@@ -49,10 +49,10 @@ class WC_CP_API {
                 wp_get_original_image_path($src_id),
                 $color_code,
                 new WP_WC_Image_Size_And_Location(
-                    $layer['offsetX'],
-                    $layer['offsetY'],
-                    $layer['width'],
-                    $layer['height']
+                    $layer['offsetX'] ?? 0,
+                    $layer['offsetY'] ?? 0,
+                    $layer['width'] ?? -1,
+                    $layer['height'] ?? -1
                 ),
                 $blend_mode,
                 $blend_channel
