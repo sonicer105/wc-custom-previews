@@ -1,6 +1,8 @@
 <?php
 defined( 'ABSPATH' ) or die(); // Prevents direct access to file.
 
+wp_enqueue_media();
+
 global $wpdb;
 $slug = WC_CP_SLUG;
 $options = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}options WHERE option_name like '{$slug}-grid-%'", ARRAY_A);
@@ -64,11 +66,30 @@ $selected = $_GET['grid-id'] ?? 'none';
                 </tr>
                 <tr>
                     <th scope="row"><label for="grid-default-value">Default Value</label></th>
+                    <?php if($selected == 'new' || $option['option_value']['gridType'] == 'color'){ ?>
                     <td><input type="text" id="grid-default-value" value="<?php echo $option['option_value']['defaultValue'] ?>"></td>
+                    <?php } else { ?>
+                    <td>
+                        <div class="image-preview-wrapper">
+                            <img id="grid-default-value-preview" src="" width="100" height="100" style="max-height: 100px; width: 100px;">
+                        </div>
+                        <input type="text" id="grid-default-value" class="data-default-value" readonly="readonly" value="<?php echo $option['option_value']['defaultValue'] ?>">
+                        <input id="grid-default-value-button" type="button" class="button button-src" value="Set" />
+                    </td>
+                    <?php } ?>
                 </tr>
                 <tr>
                     <th scope="row"><label for="grid-type">Grid Type</label></th>
-                    <td><select id="grid-type"><option selected="selected" value="color">Color</option></select></td>
+                    <td>
+                        <?php if($selected == 'new'){ ?>
+                        <select id="grid-type">
+                            <option<?php echo ($option['option_value']['gridType'] == 'color') ? ' selected="selected"' : ''; ?> value="color">Color</option>
+                            <option<?php echo ($option['option_value']['gridType'] == 'src') ? ' selected="selected"' : ''; ?> value="src">Src</option>
+                        </select>
+                        <?php } else { ?>
+                        <input id="grid-type" type="text" value="<?php echo $option['option_value']['gridType'] ?>" readonly>
+                        <?php } ?>
+                    </td>
                 </tr>
                 </tbody>
             </table>

@@ -69,14 +69,21 @@ class WC_CP_Front_End {
 
         // Only display our field if we've got a value for the field title
         foreach ($layers['layers'] as $item) {
-            if (!$item['colorConfigurable']) continue; //Skip layers that should not be colored
             $id = $item['id'];
             $title = $item['title'];
-            $color = $item['color'];
+            if ($item['colorConfigurable']) {
+                $data_source = $item['color'];
+                $class = "color-picker";
+            } else if ($item['srcConfigurable']) {
+                $data_source = $item['srcList'];
+                $class = "src-picker";
+            } else {
+                continue;
+            }
             echo <<<EOF
 <div class="custom-previews-field-wrapper">
     <label for="$id">$title</label>
-    <select id="$id" name="$id" class="color-picker" data-grid="$color"></select>
+    <select id="$id" name="$id" class="$class" data-grid="$data_source"></select>
 </div>
 EOF;
         }

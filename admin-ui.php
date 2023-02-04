@@ -16,7 +16,7 @@ class WC_CP_Admin_UI {
         add_action('admin_menu', [$this, 'add_admin_menu'], 9);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_my_scripts']);
         /* Woocommerce Product Page */
-        add_action('woocommerce_product_options_general_product_data', [$this, 'option_group']);
+        add_action('woocommerce_product_options_advanced', [$this, 'option_group']);
         add_action('woocommerce_process_product_meta', [$this, 'save_fields'], 10, 2 );
         /* Woocommerce Order Edit Page */
         add_action('woocommerce_after_order_itemmeta', [$this, 'insert_image_after_order_item_meta'], 20, 3 );
@@ -195,8 +195,8 @@ class WC_CP_Admin_UI {
         $layers = json_decode(get_option($preview_key), true);
         $to_return['layers'] = $layers['layers'];
         foreach ($layers['layers'] as $layer){
-            if($layer['srcConfigurable'] && !empty($layer['src']) && $layer['src'] != 'none'){
-                $to_return['grids'][$layer['src']] = [];
+            if($layer['srcConfigurable'] && !empty($layer['srcList']) && $layer['srcList'] != 'none'){
+                $to_return['grids'][$layer['srcList']] = [];
             }
             if($layer['colorConfigurable'] && !empty($layer['color']) && $layer['color'] != 'none'){
                 $to_return['grids'][$layer['color']] = [];
@@ -204,6 +204,9 @@ class WC_CP_Admin_UI {
         }
         foreach($to_return['grids'] as $name => $value){
             $grids = json_decode(get_option($name), true);
+            foreach ($grids['grids'] as $i => $grid) {
+                $grids['grids'][$i]['src'] = wp_get_attachment_image_url($grid['value']);
+            }
             $to_return['grids'][$name] = $grids['grids'];
             $to_return['grids'][$name . '-default'] = $grids['defaultValue'];
             $to_return['grids'][$name . '-type'] = $grids['gridType'];
