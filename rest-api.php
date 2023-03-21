@@ -44,7 +44,9 @@ class WC_CP_API {
             $blend_channel = isset($layer['blendChannel']) ? $layer['blendChannel'] : Imagick::CHANNEL_DEFAULT;
             $color_code = $layer['colorConfigurable'] ? $this->GetSanitizedColor($request, $layer['id']) : '';
             $src_id = $layer['srcConfigurable'] ? $this->GetSanitizedSrcId($request, $layer['id']) : $layer['src'];
-            if ($src_id instanceof WP_Error) return $src_id;
+            if (isset($layer['srcAllowNone']) && $layer['srcAllowNone'] == true && $src_id instanceof WP_Error){
+                continue; //Skip Rendering Layer
+            } else if ($src_id instanceof WP_Error) return $src_id;
             array_push($layer_config, new WP_WC_Image_Layer(
                 wp_get_original_image_path($src_id),
                 $color_code,

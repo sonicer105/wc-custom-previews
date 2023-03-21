@@ -24,16 +24,18 @@
                     templateResult: select2FormatStateDropdownColor,
                     templateSelection: select2FormatStateSelectedColor,
                     matcher: select2MatchCustom
-                }).val(colorPickerPallet[$(this).data('grid') + '-default']).trigger('change').on("select2:select", show_preview);
+                }).val(colorPickerPallet[$(this).data('grid') + '-default']).trigger('change').on("select2:select", on_dropdown_select);
             });
             $(".src-picker").each(function () {
+                let allowNone = $(this).data('allowNone');
+                let defaultVal = (allowNone) ? '0' : colorPickerPallet[$(this).data('grid') + '-default'];
                 $(this).select2({
                     width: '100%',
-                    data: select2GetChoices($(this).data('grid')),
+                    data: select2GetChoices($(this).data('grid'), allowNone),
                     templateResult: select2FormatStateDropdownSrc,
                     templateSelection: select2FormatStateSelectedSrc,
                     matcher: select2MatchCustom
-                }).val(colorPickerPallet[$(this).data('grid') + '-default']).trigger('change').on("select2:select", show_preview);
+                }).val(defaultVal).trigger('change').on("select2:select", on_dropdown_select);
             });
             init_preview_pane();
             console.log('Color Picker (Select2) ready!');
@@ -43,18 +45,26 @@
         }
     }
 
-    function select2GetChoices(grid) {
+    function select2GetChoices(grid, allowNone = false) {
         let toReturn = [];
+        if(allowNone){
+            toReturn[0] = {
+                id: '0',
+                text: 'None',
+                description: '',
+            }
+        }
         for (let i in colorPickerPallet[grid]) {
             if (colorPickerPallet[grid].hasOwnProperty(i)) {
-                toReturn[i] = {
+                toReturn[toReturn.length] = {
                     id: colorPickerPallet[grid][i].value,
                     text: colorPickerPallet[grid][i].title + ' (' + colorPickerPallet[grid][i].value + ')',
                     description: colorPickerPallet[grid][i].description
                 }
-                if(colorPickerPallet[grid][i].src) toReturn[i].src = colorPickerPallet[grid][i].src;
+                if(colorPickerPallet[grid][i].src) toReturn[toReturn.length - 1].src = colorPickerPallet[grid][i].src;
             }
         }
+        console.log(toReturn);
         return toReturn;
     }
 
@@ -71,7 +81,7 @@
     }
 
     function select2FormatStateSelectedSrc(state) {
-        if (!state.id) {
+        if (!state.id || state.id === "0") {
             return state.text;
         }
         return $(
@@ -96,7 +106,7 @@
     }
 
     function select2FormatStateDropdownSrc(state) {
-        if (!state.id) {
+        if (!state.id || state.id === "0") {
             return state.text;
         }
         return $(
@@ -128,6 +138,19 @@
         $(".custom-previews-image-preview img").on('load', function () {
             $(".custom-previews-image-preview .loader-wrapper").hide();
         });
+    }
+
+    function on_dropdown_select() {
+        if($(this).val() !== "0"){
+            let toUnset = $(this).data('unset-id');
+            if(toUnset && toUnset.length && toUnset.length > 0){
+                toUnset = toUnset.split(',');
+                toUnset.forEach(function(item){
+                    $('#' + item).val('0').trigger('change');
+                });
+            }
+        }
+        show_preview();
     }
 
     function show_preview() {

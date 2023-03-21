@@ -184,6 +184,10 @@ class WC_CP_Admin_UI {
     }
 
     static function get_config_for_product($id) {
+        $product = wc_get_product($id);
+        if($product->get_type() == 'variation'){
+            $id = $product->get_parent_id();
+        }
         $preview_key = get_post_meta($id, 'custom_previews', true);
         if(!isset($preview_key) || $preview_key == 'none'){
             return new WP_Error('no-preview-configured', 'No custom preview is configured for this product', array('status' => 400));
@@ -231,25 +235,58 @@ class WC_CP_Admin_UI {
         //echo '<pre>' . print_r($item, true) . '</pre>';
         //echo '<pre>' . print_r($data, true) . '</pre>';
 
+        $id = $product->get_id();
+        if($product->get_type() == "variation"){
+            $id = $product->get_parent_id();
+        }
+
+
         $url_params = [
-            'id' => $product->get_id()
+            'id' => $id
         ];
 
         foreach ($data['layers'] as $layer) {
-            if($layer['colorConfigurable'] == false) continue;
-            $nice_value = $item->get_meta($layer['title']);
+            if($layer['colorConfigurable']) {
+                $nice_value = $item->get_meta($layer['title']);
 
-            if(strlen($nice_value) <= 0) { echo "Unable to find meta key \"{$layer['title']}\""; return; }
+                if (strlen($nice_value) <= 0) {
+                    echo "Unable to find meta key \"{$layer['title']}\"";
+                    return;
+                }
 
-            $real_value_index = array_search($nice_value, array_column($data['grids'][$layer['color']],'title'));
+                $real_value_index = array_search($nice_value, array_column($data['grids'][$layer['color']], 'title'));
 
-            if($real_value_index !== 0 && empty($real_value_index)) { echo "Unable to find the hex code for layer \"{$layer['title']}\", value \"{$nice_value}\""; return; }
+                if ($real_value_index !== 0 && empty($real_value_index)) {
+                    echo "Unable to find the hex code for layer \"{$layer['title']}\", value \"{$nice_value}\"";
+                    return;
+                }
 
-            $url_params[$layer['id']] = substr($data['grids'][$layer['color']][$real_value_index]['value'], 1);
+                $url_params[$layer['id']] = substr($data['grids'][$layer['color']][$real_value_index]['value'], 1);
+            }
+            if($layer['srcConfigurable']) {
+                $nice_value = $item->get_meta($layer['title']);
+
+                if (strlen($nice_value) <= 0) {
+                    if($layer['srcAllowNone']) {
+                        continue;
+                    }
+                    echo "Unable to find meta key \"{$layer['title']}\"";
+                    return;
+                }
+
+                $real_value_index = array_search($nice_value, array_column($data['grids'][$layer['srcList']], 'title'));
+
+                if ($real_value_index !== 0 && empty($real_value_index)) {
+                    echo "Unable to find the hex code for layer \"{$layer['title']}\", value \"{$nice_value}\"";
+                    return;
+                }
+
+                $url_params[$layer['id']] = $data['grids'][$layer['srcList']][$real_value_index]['value'];
+            }
         }
 
         echo '<strong style="display: block;">Generated Image:</strong>';
-        echo '<img src="' . get_rest_url() . WC_CP_API::$namespace . '/generate?' . http_build_query($url_params) . '" style="width:300px;height:300px;">';
+        echo '<img src="' . get_rest_url() . WC_CP_API::$namespace . '/generate?' . http_build_query($url_params) . '" style="max-width:300px;object-fit:contain;">';
     }
 }
 

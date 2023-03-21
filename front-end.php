@@ -71,19 +71,23 @@ class WC_CP_Front_End {
         foreach ($layers['layers'] as $item) {
             $id = $item['id'];
             $title = $item['title'];
+            $allow_none = 'false';
+            $unset_id = '';
             if ($item['colorConfigurable']) {
                 $data_source = $item['color'];
                 $class = "color-picker";
             } else if ($item['srcConfigurable']) {
                 $data_source = $item['srcList'];
                 $class = "src-picker";
+                $allow_none = isset($item['srcAllowNone']) && $item['srcAllowNone'] == true ? 'true' : 'false';
+                $unset_id = $item['srcUnsetId'] ?? '';
             } else {
                 continue;
             }
             echo <<<EOF
 <div class="custom-previews-field-wrapper">
     <label for="$id">$title</label>
-    <select id="$id" name="$id" class="$class" data-grid="$data_source"></select>
+    <select id="$id" name="$id" class="$class" data-grid="$data_source" data-allow-none="$allow_none" data-unset-id="$unset_id"></select>
 </div>
 EOF;
         }
@@ -106,17 +110,31 @@ EOF;
 
         foreach ($layers['layers'] as $item) {
 
-            if(!$item['colorConfigurable']) continue;
+            if($item['colorConfigurable']){
+                if(empty($_POST[$item['id']])){
+                    wc_add_notice(sprintf(__( 'Please enter a value for %s.', WC_CP_SLUG ), $item['title']), 'error' );
+                    return false;
+                }
 
-            if(empty($_POST[$item['id']])){
-                wc_add_notice(sprintf(__( 'Please enter a value for %s.', WC_CP_SLUG ), $item['title']), 'error' );
-                return false;
+                $options = array_column($layers['grids'][$item['color']], 'value');
+                if(!in_array($_POST[$item['id']], $options, true)){
+                    wc_add_notice(sprintf(__( 'The field "%s" is invalid.', WC_CP_SLUG ), $item['title']), 'error' );
+                    return false;
+                }
             }
 
-            $options = array_column($layers['grids'][$item['color']], 'value');
-            if(!in_array($_POST[$item['id']], $options, true)){
-                wc_add_notice(sprintf(__( 'The field "%s" is invalid.', WC_CP_SLUG ), $item['title']), 'error' );
-                return false;
+
+            if($item['srcConfigurable']){
+                if(empty($_POST[$item['id']]) && $item['srcAllowNone'] == false){
+                    wc_add_notice(sprintf(__( 'Please enter a value for %s.', WC_CP_SLUG ), $item['title']), 'error' );
+                    return false;
+                }
+
+                $options = array_column($layers['grids'][$item['srcList']], 'value');
+                if(!in_array($_POST[$item['id']], $options, true) && $item['srcAllowNone'] == false){
+                    wc_add_notice(sprintf(__( 'The field "%s" is invalid.', WC_CP_SLUG ), $item['title']), 'error' );
+                    return false;
+                }
             }
         }
         return $passed;
@@ -138,14 +156,22 @@ EOF;
         if(!isset($enabled) || $enabled == 'none') return $cart_item_data;
 
         foreach ($layers['layers'] as $item) {
-            if(!$item['colorConfigurable']) continue;
-
-            foreach ($layers['grids'][$item['color']] as $choice) {
-                if ($choice['value'] == $_POST[$item['id']]) {
-                    $cart_item_data[$item['id']] = $choice['title'];
-                    break;
-                }
-            };
+            if($item['colorConfigurable']){
+                foreach ($layers['grids'][$item['color']] as $choice) {
+                    if ($choice['value'] == $_POST[$item['id']]) {
+                        $cart_item_data[$item['id']] = $choice['title'];
+                        break;
+                    }
+                };
+            }
+            if ($item['srcConfigurable']) {
+                foreach ($layers['grids'][$item['srcList']] as $choice) {
+                    if ($choice['value'] == $_POST[$item['id']]) {
+                        $cart_item_data[$item['id']] = $choice['title'];
+                        break;
+                    }
+                };
+            }
         }
 
         return $cart_item_data;
@@ -163,7 +189,7 @@ EOF;
         if($layers instanceof WP_Error) return $name;
 
         foreach ($layers['layers'] as $item) {
-            if(!$item['colorConfigurable']) continue;
+            if(!$item['colorConfigurable'] && !$item['srcConfigurable']) continue;
             if(isset($cart_item[$item['id']])) {
                 $name .= sprintf('<div><b>%s:</b> %s</div>', esc_html($item['title']), esc_html($cart_item[$item['id']]));
             }
@@ -184,7 +210,7 @@ EOF;
 
         foreach($item as $cart_item_key=>$values) {
             foreach ($layers['layers'] as $layer_item) {
-                if(!$layer_item['colorConfigurable']) continue;
+                if(!$layer_item['colorConfigurable'] && !$layer_item['srcConfigurable']) continue;
                 if(isset($values[$layer_item['id']])) {
                     $item->add_meta_data($layer_item['title'], $values[$layer_item['id']], true);
                 }

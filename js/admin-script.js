@@ -169,6 +169,8 @@ jQuery(function ($){
             srcConfigurable: false,
             src: "",
             srcList: "",
+            srcAllowNone: false,
+            srcUnsetId: '',
             colorConfigurable: false,
             color: "",
             blendChannel: Imagick.COMPOSITE_DEFAULT,
@@ -211,7 +213,8 @@ jQuery(function ($){
             '<td>' +
             '<table class="layer-editor-wrapper layer-' + addNewCounter + '"><tbody><tr>' +
             '<th><label for="row-id-' + addNewCounter + '">ID</label></th>' +
-            '<td><input type="text" id="row-id-' + addNewCounter + '" class="data-id" value="' + item.id + '"></td>' +
+            '<td><input type="text" id="row-id-' + addNewCounter + '" class="data-id" value="' + item.id + '">' +
+            '<p>It\'s Highly recommended that you use a prefix for IDs, for instance, if you are making a shirt base layer, make the id "tshirt-base"</p></td>' +
             '</tr><tr>' +
             '<th><label for="row-title-' + addNewCounter + '">Title</label></th>' +
             '<td><input type="text" id="row-title-' + addNewCounter + '" class="data-title" value="' + item.title + '"></td>' +
@@ -230,6 +233,13 @@ jQuery(function ($){
             '</tr><tr class="src-list-row"' + (item.srcConfigurable ? '' : ' style="display:none;"') + '>' +
             '<th><label for="row-src-list-' + addNewCounter + '">Src</label></th>' +
             '<td><select id="row-src-list-' + addNewCounter + '" class="data-src-list">' + srcOptions + '</td>' +
+            '</tr><tr class="src-list-row"' + (item.srcConfigurable ? '' : ' style="display:none;"') + '>' +
+            '<th><label for="row-src-allow-none-' + addNewCounter + '">Src Allow None</label></th>' +
+            '<td><input type="checkbox" id="row-src-allow-none-' + addNewCounter + '" class="data-src-allow-none"' + (item.srcAllowNone ? ' checked="checked"' : '') + '></td>' +
+            '</tr><tr class="src-list-row"' + (item.srcConfigurable ? '' : ' style="display:none;"') + '>' +
+            '<th><label for="row-src-unset-id-' + addNewCounter + '">Src Unset ID</label></th>' +
+            '<td><input type="text" id="row-src-unset-id-' + addNewCounter + '" class="data-src-unset-id" value="' + item.srcUnsetId + '">' +
+            '<div>Enter comma separated IDs. When a valid field ID is supplied, the field with that ID will be set to "None" when this field is set to a value.</div></td>' +
             '</tr><tr>' +
             '<th><label for="row-color-configurable-' + addNewCounter + '">Color Configurable</label></th>' +
             '<td><input type="checkbox" id="row-color-configurable-' + addNewCounter + '" class="data-color-configurable"' + (item.colorConfigurable ? ' checked="checked"' : '') + '></td>' +
@@ -317,6 +327,8 @@ jQuery(function ($){
                 srcConfigurable: $(el).find(".data-src-configurable").first().prop("checked"),
                 src: $(el).find(".data-src").first().val(),
                 srcList: $(el).find(".data-src-list").first().val(),
+                srcAllowNone: $(el).find(".data-src-allow-none").first().prop("checked"),
+                srcUnsetId: $(el).find(".data-src-unset-id").first().val(),
                 colorConfigurable: $(el).find(".data-color-configurable").first().prop("checked"),
                 color: $(el).find(".data-color").first().val(),
                 blendChannel: parseInt($(el).find(".data-blend-channel").first().val()),
